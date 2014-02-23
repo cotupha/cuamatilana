@@ -1,0 +1,149 @@
+\documentclass[12pt,letterpaper,spanish]{article}
+\usepackage{babel}
+\usepackage[spanish]{layout}
+\usepackage[utf8]{inputenc}
+\usepackage{listings}
+\usepackage{verbatim}
+
+\setlength{\unitlength}{1cm}
+\setlength{\parindent}{0cm}
+
+\pagestyle{plain}
+
+\author{Laura Alicia Leonides Jiménez}
+\title{Verificador para \textsc{pctl}}
+
+\date{ } 
+
+\begin{document}
+\maketitle
+
+En el presente documento se especifica cómo fue implementado el programa, cuáles archivos
+se entregan en la distribución anexa a la versión electrónica del documento y cómo debe
+ejecutarse el programa.
+\\\\
+Asimismo, se incluyen algunos ejemplos de los archivos en los que debe especificarse el modelo
+y la fórmula a verificar.
+
+\section{Implementación}
+El programa fue realizado en Haskell 98 y contiene los siguientes módulos:
+\begin{description}
+ \item [SintaxisPCTL.] En él se define la sintaxis de las
+fórmulas de \textsc{Pctl} que se podrán procesar.
+ \item [VerificadorPCTL.] Se encarga de verificar un modelo y una fórmula.
+ \item [Rela.] Contiene funciones auxiliares para manejar la relación de transición  con 
+probabilidades.
+ \item [Modelo.] Contiene las definiciones de tipos de datos del modelo.
+ \item [Main.] Módulo principal del sistema. Encargado de obtener el archivo
+con las definiciones y de procesar la información que ahí se encuentra (modelo y fórmula)
+necesarias para especificar un modelo.
+ \item [Lector.] Se encarga de leer el archivo en el que se encuentra
+la definición del modelo y la fórmula. Parsea cada una de las partes involucradas.
+ \item [ArrayUtil.] Contiene funciones auxiliares para facilitar el manejo de arreglos
+y matrices.
+\end{description}
+
+Asimismo, se utilizó la biblioteca Haskell \textsc{dsp} como auxiliar en el manejo de matrices.
+
+Todos los archivos fuente utilizan la codificación \textsc{utf}-8.
+
+\section{Distribución}
+Junto con la versión electrónica de este documento, se entrega el archivo \texttt{VerificadorPCTL.tar.gz}.
+Dicho archivo debe descomprimirse y entonces se tendrá la siguiente estructura de directorios:
+\begin{verbatim}
+VerificadorPCTL
+|-- prueba.dat
+`-- src
+    |-- ArrayUtil.hs
+    |-- Lector.hs
+    |-- Main.hs
+    |-- Matrix
+    |   |-- LU.hs
+    |   `-- Matrix.hs
+    |-- Modelo.hs
+    |-- Rela.hs
+    |-- SintaxisPCTL.hs
+    `-- VerificadorPCTL.hs
+
+\end{verbatim}
+
+
+\section{Ejecución}
+
+\textbf{Con un intérprete}
+\\\\
+Basta con cargar el módulo \texttt{Main} en un intérprete de Haskell (las
+pruebas se realizaron utilizando \textsc{ghc}i Versión 6.8.2) e invocar a la función
+\texttt{main}, de la siguiente manera:
+\begin{verbatim}
+[cotupha@ronja src]$ ghci Main
+GHCi, version 6.8.2: http://www.haskell.org/ghc/  :? for help
+Loading package base ... linking ... done.
+[1 of 9] Compiling SintaxisPCTL     ( SintaxisPCTL.hs, interpreted )
+[2 of 9] Compiling Matrix.Matrix    ( Matrix/Matrix.hs, interpreted )
+[3 of 9] Compiling Matrix.LU        ( Matrix/LU.hs, interpreted )
+[4 of 9] Compiling Modelo           ( Modelo.hs, interpreted )
+[5 of 9] Compiling Lector           ( Lector.hs, interpreted )
+[6 of 9] Compiling Rela             ( Rela.hs, interpreted )
+[7 of 9] Compiling ArrayUtil        ( ArrayUtil.hs, interpreted )
+[8 of 9] Compiling VerificadorPCTL  ( VerificadorPCTL.hs, interpreted )
+[9 of 9] Compiling Main             ( Main.hs, interpreted )
+Ok, modules loaded: VerificadorPCTL, Main, ArrayUtil, Modelo, Matrix.LU,
+Matrix.Matrix, Lector, SintaxisPCTL, Rela.
+*Main>  
+\end{verbatim}
+Después de especificar el nombre del archivo, el programa parsea dicho archivo y muestra en pantalla
+los estados que satisfacen a la fórmula dada en el modelo especificado, como se muestra a continuación:
+\begin{verbatim}
+Dame el nombre del archivo con la especificaciónn del modelo M y la
+fórmula a verificar
+../prueba.dat
+Los estados s tales que M,s|=a son:
+fromList [2,3,4]
+\end{verbatim}
+
+\section{Definición del modelo y fórmula}
+Es necesario proporcionar al programa un archivo en el que se encuentren las definiciones necesarias
+para determinar el modelo y la fórmula a verificar.
+Deben especificarse, en el orden presentado, los siguientes componentes:
+\begin{itemize}
+ \item Conjunto de átomos.
+ \item Número de estados.
+ \item Relación de transición con probabilidades.
+ \item Función de etiquetamiento.
+ \item Fórmula.
+\end{itemize}
+A continuación se incluye un ejemplo de dicho archivo:
+\begin{lstlisting} [mathescape,basicstyle=\small,columns=flexible,xleftmargin=0.9cm,numbers=left,label=ejemplo,language=C++,extendedchars=true]
+{not, try, fail, succ}
+4
+(2, 1.0)
+(2, 0.01),(3, 0.01),(4, 0.98)
+(1, 1.0 )
+(4, 1.0 )
+#1>{not}#2>{try}#3>{fail}#4>{succ}
+(P >= 0.9 [X (Or (Not(Lit try))(Lit succ))])
+\end{lstlisting}
+Ejemplos de otras fórmulas:
+\begin{lstlisting} [mathescape,basicstyle=\small,columns=flexible,xleftmargin=0.9cm,numbers=left,label=ejemploF,language=C++,extendedchars=true]
+************ X **************
+(P >= 0.9 [X (Or (Not(Lit try))(Lit succ))])
+(P >= 0.9 [X (Not (And (Lit try)(Not (Lit succ))))])
+(P <= 0.99 [X (Not (And (Lit try)(Not (Lit succ))))])
+(P < 0.99 [X (Not (And (Lit try)(Not (Lit succ))))])
+************ Uk *************
+(P > 0.98 [Uk 2 (Top) (Lit succ)])
+(P >= 1.0 [Uk 2 (Top) (Lit succ)])
+************ U **************
+(P > 0.99 [U (Lit try) (Lit succ)])
+(P < 0.99 [U (Lit try) (Lit succ)])
+************ Props **********
+(Not (And (Lit try)(Not (Lit succ))))
+(Lit succ)
+(Top)
+(Not (Lit try))
+(And (Lit try) (Lit fail))
+(Lit try)
+\end{lstlisting}
+
+\end{document}

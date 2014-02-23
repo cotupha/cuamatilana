@@ -1,0 +1,29 @@
+{not, try, fail, succ}
+4
+(2, 1.0)
+(2, 0.01),(3, 0.01),(4, 0.98)
+(1, 1.0 )
+(4, 1.0 )
+#1>{not}#2>{try}#3>{fail}#4>{succ}
+(P >= 0.9 [X (Or (Not(Lit try))(Lit succ))])
+************ X **************
+(P >= 0.9 [X (Or (Not(Lit try))(Lit succ))])
+(P >= 0.9 [X (Not (And (Lit try)(Not (Lit succ))))])
+(P <= 0.99 [X (Not (And (Lit try)(Not (Lit succ))))])
+(P < 0.99 [X (Not (And (Lit try)(Not (Lit succ))))])
+************ Uk *************
+(P > 0.98 [Uk 2 (Top) (Lit succ)])
+(P >= 1.0 [Uk 2 (Top) (Lit succ)])
+************ U **************
+(P > 0.99 [U (Lit try) (Lit succ)])
+(P < 0.99 [U (Lit try) (Lit succ)])
+************ Props **********
+(Not (And (Lit try)(Not (Lit succ))))
+(Lit succ)
+(Top)
+(Not (Lit try))
+(And (Lit try) (Lit fail))
+(Lit try)
+
+Como el programa sólo lee las primeras líneas, las demás pueden
+quedarse en el archivo para pruebas posteriores.
